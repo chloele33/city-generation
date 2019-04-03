@@ -38,7 +38,13 @@ void main()
 
     vec4 instancedPos = transformation * vs_Pos ;
 
-    gl_Position = vec4(instancedPos.x / (2000.0 / 2.0) - 1.0, instancedPos.z / (2000.0 / 2.0) - 1.0, 0.0, 1.0);
+    vec4 pos = vec4(100.0 * (instancedPos.x / (2000.0 / 2.0) - 1.0), 0.1, 100.0 * (instancedPos.z / (2000.0 / 2.0) - 1.0), 1.0);
+
+
+    gl_Position = u_ViewProj * pos;
+
+
+    //gl_Position = vec4(instancedPos.x / (2000.0 / 2.0) - 1.0, instancedPos.z / (2000.0 / 2.0) - 1.0, 0.0, 1.0);
     //gl_Position = vec4(instancedPos.x, instancedPos.z, 0.0, 1.0);
 
 //    vec3 offset = vs_Translate;

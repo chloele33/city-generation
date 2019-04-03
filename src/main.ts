@@ -1,7 +1,8 @@
-import {vec3} from 'gl-matrix';
+import {vec3, vec2} from 'gl-matrix';
 import * as Stats from 'stats-js';
 import * as DAT from 'dat-gui';
 import Square from './geometry/Square';
+import Plane from './geometry/Plane';
 import ScreenQuad from './geometry/ScreenQuad';
 import OpenGLRenderer from './rendering/gl/OpenGLRenderer';
 import Camera from './Camera';
@@ -24,6 +25,7 @@ const controls = {
   'Extension Coefficient': 0.03
 };
 
+let plane: Plane;
 let square: Square;
 let screenQuad: ScreenQuad;
 let time: number = 0.0;
@@ -78,6 +80,8 @@ function loadScene() {
   square.create();
   screenQuad = new ScreenQuad();
   screenQuad.create();
+  plane = new Plane(vec3.fromValues(0, 0, 0), vec2.fromValues(2, 2), 8);
+  plane.create();
 
   // load from obj file
   // load mud
@@ -144,7 +148,9 @@ function main() {
   // Initial call to load scene
   loadScene();
 
-  const camera = new Camera(vec3.fromValues(50, 50, 10), vec3.fromValues(50, 50, 0));
+ // const camera = new Camera(vec3.fromValues(50, 50, 10), vec3.fromValues(50, 50, 0));
+  const camera = new Camera(vec3.fromValues(0, 200, 0), vec3.fromValues(0, 0, 0));
+
 
   const renderer = new OpenGLRenderer(canvas);
   renderer.setClearColor(0.2, 0.2, 0.2, 1);
@@ -162,9 +168,16 @@ function main() {
     new Shader(gl.FRAGMENT_SHADER, require('./shaders/flat-frag.glsl')),
   ]);
 
+  flat.setDimensions(2000, 2000);
+
   const textureShader = new ShaderProgram([
     new Shader(gl.VERTEX_SHADER, require('./shaders/texture-vert.glsl')),
     new Shader(gl.FRAGMENT_SHADER, require('./shaders/texture-frag.glsl')),
+  ]);
+
+  const planeShader = new ShaderProgram([
+    new Shader(gl.VERTEX_SHADER, require('./shaders/terrain-vert.glsl')),
+    new Shader(gl.FRAGMENT_SHADER, require('./shaders/terrain-frag.glsl')),
   ]);
 
   // This function will be called every frame
@@ -184,21 +197,33 @@ function main() {
 
     if (controls["Show Terrain"] == true) {
       textureShader.setTerrain(1.0);
+      planeShader.setTerrain(1.0);
+
     } else {
       textureShader.setTerrain(0.0);
+      planeShader.setTerrain(0.0);
+
     }
 
     if (controls["Show Population"] == true) {
       textureShader.setPopulation(1.0);
+      planeShader.setPopulation(1.0);
+
+
     } else {
       textureShader.setPopulation(0.0);
+      planeShader.setPopulation(0.0);
+
     }
 
     if (controls["Land vs. Water"] == true) {
+      planeShader.setLandVsWater(1.0);
       textureShader.setLandVsWater(1.0);
     } else {
       textureShader.setLandVsWater(0.0);
+      planeShader.setLandVsWater(0.0);
     }
+
 
     if (rerun) {
       rerun = false;
@@ -206,8 +231,9 @@ function main() {
     }
 
 
-    renderer.render(camera, textureShader, [screenQuad]);
-    //renderer.render(camera, flat, [screenQuad]);
+   // renderer.render(camera, textureShader, [screenQuad]);
+    renderer.render(camera, planeShader, [plane]);
+
     renderer.render(camera, instancedShader, [
       square,
     ]);
@@ -293,6 +319,7 @@ function main() {
   camera.updateProjectionMatrix();
   flat.setDimensions(2000, 2000);
   instancedShader.setDimensions(2000,  2000);
+  textureShader.setDimensions(2000, 2000);
 
   // Start the render loop
   tick();
