@@ -23,55 +23,74 @@ class City {
         for (let i = 0; i < this.texture.width; i++) {
             let newArr = [];
             for (let j = 0; j < this.texture.height; j++) {
-                // check for water
-                // if (this.texture.getElevation(i, j) == 1) {
-                //     newArr.push(1);
-                // } else {
                      newArr.push(0);
-                // }
             }
             this.cityGrid.push(newArr);
         }
+        // check for roads
+        for (let i = 0; i < this.edges.length; i++) {
+            let edge = this.edges[i];
+            let ep = edge.endPoint;
+            let sp = edge.startingPoint;
 
-        // check edges
-        for (let i = 0; i < this.texture.width; i++) {
-            for (let j = 0; j < this.edges.length; j++) {
-                let edge = this.edges[j];
-                // rasterize with i being the y coordinate
-                let result: any = null; // test against result
-                let ymax = Math.max(edge.startingPoint[2], edge.endPoint[2]);
-                let ymin = Math.min(edge.startingPoint[2], edge.endPoint[2]);
+            let ymin = Math.min(ep[2], sp[2]);
+            let ymax = Math.max(ep[2], sp[2]);
+            let xmin = Math.min(ep[0], sp[0]);
+            let xmax = Math.max(ep[0], sp[0]);
 
-                if (ymax >= i && ymin <= i) {
-                    let my = edge.endPoint[2] - edge.startingPoint[2]; //y
-                    let mx = edge.endPoint[0] - edge.startingPoint[0]; //x
+            let width = edge.size == 10 ? this.highwayThickness : this.roadThickness;
 
-                    if (mx == 0) {
-                        result = edge.startingPoint[0];
-                    } else if (my == 0) {
-                        // midpoint
-                        let x = edge.startingPoint[0] + edge.endPoint[0];
-                        let y = edge.startingPoint[1] + edge.endPoint[1];
-                        let z = edge.startingPoint[2] + edge.endPoint[2];
-                        result = vec3.fromValues(x / 2.0, y / 2.0, z / 2.0);
-                    } else {
-                        let m = my / mx;
-                        result = (i / m) - (edge.startingPoint[2] / m) + edge.startingPoint[2];
+
+            if (ymin == ymax) {
+                for (let x = Math.floor(xmin); x <= Math.ceil(xmax); x++) {
+                    for (let y = Math.floor(ymin - width); y <= Math.floor(ymax + width); y++) {
+                        this.cityGrid[x][y] = 1;
+                    }
+                }
+            } else if (xmin == xmax) {
+                for (let x = Math.floor(xmin - width); x <= Math.floor(xmax + width); x++) {
+                    for (let y = Math.floor(ymin); y <= Math.ceil(ymax); y++) {
+                        this.cityGrid[x][y] = 1;
+                    }
+                }
+            }
+            else {
+                let m = (ep[2] - sp[2]) /
+                    (ep[0] - sp[0]);
+                 let x1 = sp[0];
+                 let y1 = sp[2] ;
+
+                for (let y = Math.floor(ymin); y <= Math.ceil(ymax ); y++) {
+                    let xInt = x1 + (y - y1) / m;
+                    for (let x = Math.floor(xInt - width); x <= Math.ceil(xInt + width); x++) {
+                        //let yInt = y1 + (xInt - x1) * m;
+                        //for (let dy = Math.floor(yInt - width); dy <= Math.ceil(yInt + width); dy++) {
+                            if (x >= 0 && x < this.texture.width && y >= 0 && y < this.texture.height) {
+                                this.cityGrid[x][y] = 1;
+                            }
+                        //}
                     }
                 }
 
-                if (result != null) {
-                    let xInt = Math.floor(result);
-                    let wid = edge.size == 10 ? this.highwayThickness : this.roadThickness;
-
-                    for (let dx = -wid; dx < wid + 1; dx++) {
-                        let x = xInt + dx;
-                        if (x >= 0 && x < this.texture.width) {
-                            this.cityGrid[x][i] = 1;
+                for (let x = Math.floor(xmin); x <= Math.ceil(xmax ); x++) {
+                    let yInt = y1 + (x - x1) * m;
+                    for (let y = Math.floor(yInt - width); y <= Math.ceil(yInt + width); y++) {
+                        if (x >= 0 && x < this.texture.width && y >= 0 && y < this.texture.height) {
+                            this.cityGrid[x][y] = 1;
                         }
+
                     }
                 }
 
+            }
+
+        }
+        // check water
+        for (let i = 0; i < this.texture.width; i++) {
+            for (let j = 0; j < this.texture.height; j++) {
+                if (this.texture.getElevation(i, j) == 0) {
+                    this.cityGrid[i][j] = 1;
+                }
             }
         }
         return this.cityGrid;

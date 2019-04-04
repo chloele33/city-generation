@@ -651,7 +651,7 @@ class MapTexture {
         let offsetLand = 1.0;
         let water = this.texData[yPos * this.width * 4 + xPos * 4 + offsetWater]
         let land = this.texData[yPos * this.width * 4 + xPos * 4 + offsetLand]
-        if (water > land) {
+        if (water >= land) {
             return 0;
         }
         return 1;

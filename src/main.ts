@@ -107,7 +107,7 @@ function generateRoad() {
         col4Array.push(j);
         col4Array.push(1);
 
-        colorsArray.push(1);
+        colorsArray.push(0);
         colorsArray.push(0);
         colorsArray.push(0);
         colorsArray.push(1);
