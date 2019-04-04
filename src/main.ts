@@ -21,10 +21,12 @@ const controls = {
   'Show Population' : true,
   'Land vs. Water' : false,
   'Iterations': 6,
-  'Road Length': 50,
-  'Highway Length': 400,
+  'Road Length': 70,
+  'Highway Length': 385,
   'Snap Coefficient': 0.6,
-  'Extension Coefficient': 0.03
+  'Extension Coefficient': 0.03,
+  'Road Thickness': 5,
+  'Highway Thickness': 10
 };
 
 let plane: Plane;
@@ -65,6 +67,16 @@ gui.add(controls, 'Extension Coefficient', 0.01, 0.09).step(0.01).onChange(
       rerun = true;
     }.bind(this));
 
+gui.add(controls, 'Road Thickness', 1, 10).step(1).onChange(
+    function() {
+      rerun = true;
+    }.bind(this));
+
+gui.add(controls, 'Highway Thickness', 5, 15).step(1).onChange(
+    function() {
+      rerun = true;
+    }.bind(this));
+
 function generateRoad() {
   // pass texture data to road LSystem
   let highwayLength = controls["Highway Length"];
@@ -76,7 +88,9 @@ function generateRoad() {
   lsystemRoad.run(highwayLength, highwayAngle, roadLength, iterations, snap_coefficient, extension_coefficient);
   // run LSystem
 
-  let outputGrid: number[][] = city.rasterize(lsystemRoad.edges);
+  let roadThickness = controls["Road Thickness"];
+  let highwayThickness = controls["Highway Thickness"];
+  let outputGrid: number[][] = city.rasterize(lsystemRoad.edges, roadThickness, highwayThickness);
 
   let col1Array: number[] = [];
   let col2Array: number[] = [];
@@ -86,7 +100,7 @@ function generateRoad() {
 
   for (let i = 0; i < 2000; i++) {
     for (let j = 0; j < 2000; j++) {
-      if (outputGrid[i][j] == 1) {
+      if (outputGrid[i][j] != 0) {
         col1Array.push(1);
         col1Array.push(0);
         col1Array.push(0);
@@ -107,10 +121,17 @@ function generateRoad() {
         col4Array.push(j);
         col4Array.push(1);
 
-        colorsArray.push(0);
-        colorsArray.push(0);
-        colorsArray.push(0);
-        colorsArray.push(1);
+        if (outputGrid[i][j] == 1) {
+          colorsArray.push(1);
+          colorsArray.push(0);
+          colorsArray.push(0);
+          colorsArray.push(1);
+        } else {
+          colorsArray.push(0);
+          colorsArray.push(0);
+          colorsArray.push(0);
+          colorsArray.push(1);
+        }
       }
     }
   }
@@ -348,10 +369,10 @@ function main() {
   // // run LSystem
 
   lsystemRoad = new LSystemRoad(textureData, 2000, 2000);
-  city = new City(textureData, 2000, 2000, 5, 10);
+  city = new City(textureData, 2000, 2000);
   generateRoad();
 
-  // instance render road system
+  //instance render road system
   // let vboData = lsystemRoad.getVBO();
   // square.setInstanceVBOs2(vboData.col1, vboData.col2, vboData.col3, vboData.col4, vboData.colors);
   // square.setNumInstances(vboData.col1.length / 4.0);

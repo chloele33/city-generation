@@ -9,14 +9,14 @@ class City {
     texture: MapTexture;
     edges: Edge[];
 
-    constructor(texture: Uint8Array, width: number, height: number,
-                roadThickness: number, highwayThickness: number) {
+    constructor(texture: Uint8Array, width: number, height: number) {
         this.texture = new MapTexture(texture, width, height);
-        this.highwayThickness = highwayThickness;
-        this.roadThickness = roadThickness;
+
     }
 
-    rasterize(edges : Edge[]) : number[][]{
+    rasterize(edges : Edge[], roadThickness: number, highwayThickness: number) : number[][]{
+        this.highwayThickness = highwayThickness;
+        this.roadThickness = roadThickness;
         this.edges = edges;
         // initial setup
         this.cityGrid = [];
@@ -44,13 +44,18 @@ class City {
             if (ymin == ymax) {
                 for (let x = Math.floor(xmin); x <= Math.ceil(xmax); x++) {
                     for (let y = Math.floor(ymin - width); y <= Math.floor(ymax + width); y++) {
-                        this.cityGrid[x][y] = 1;
-                    }
+                        if (x >= 0 && x < this.texture.width && y >= 0 && y < this.texture.height) {
+
+                            this.cityGrid[x][y] = 1;
+                        }                    }
                 }
             } else if (xmin == xmax) {
                 for (let x = Math.floor(xmin - width); x <= Math.floor(xmax + width); x++) {
                     for (let y = Math.floor(ymin); y <= Math.ceil(ymax); y++) {
-                        this.cityGrid[x][y] = 1;
+                        if (x >= 0 && x < this.texture.width && y >= 0 && y < this.texture.height) {
+
+                            this.cityGrid[x][y] = 1;
+                        }
                     }
                 }
             }
@@ -92,6 +97,41 @@ class City {
                     this.cityGrid[i][j] = 1;
                 }
             }
+        }
+
+        // place buildings
+        for (let i = 0; i < this.texture.width * 4; i++) {
+            let x = Math.floor(this.texture.width * Math.random());
+            let y = Math.floor(this.texture.height * Math.random());
+
+            // check if x,y is a valid place to have a building
+            let valid = true;
+            if (this.texture.getPopulation(x, y) < 0.055) {
+                valid = false;
+            }
+            let radius = 5;
+            for (let j = x - radius; j < x + radius + 1; j++) {
+                for (let k = y - radius; k < y + radius + 1; k++) {
+                    if (j >= 0 && j < this.texture.width && k >= 0 && k < this.texture.height) {
+                        if (this.cityGrid[j][k] != 0) {
+                            valid = false;
+                        }
+                    }
+                }
+            }
+            // draw point if valid
+            if (valid) {
+                console.log("HI");
+                for (let j = x - radius; j <  x + radius + 1; j++) {
+                    for (let k: number = y - radius; k < y + radius + 1; k++) {
+                        if (j >= 0 && j < this.texture.width && k >= 0 && k < this.texture.height) {
+                            this.cityGrid[j][k] = 2;
+                        }
+                    }
+                }
+            }
+
+
         }
         return this.cityGrid;
     }

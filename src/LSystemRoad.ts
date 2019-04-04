@@ -588,9 +588,9 @@ class LSystemRoad {
             col4Array.push(currTransform[14]);
             col4Array.push(currTransform[15]);
 
-            colorsArray.push(0);
-            colorsArray.push(0);
-            colorsArray.push(0);
+            colorsArray.push(1);
+            colorsArray.push(1);
+            colorsArray.push(1);
             colorsArray.push(1);
         }
 
