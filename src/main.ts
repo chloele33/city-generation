@@ -11,6 +11,8 @@ import Mesh from './geometry/Mesh'
 import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
 import {readTextFile} from './globals';
 import {LSystemRoad} from './LSystemRoad';
+import {City} from './City';
+
 
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
@@ -29,6 +31,7 @@ let plane: Plane;
 let square: Square;
 let screenQuad: ScreenQuad;
 let time: number = 0.0;
+let city: City;
 let lsystemRoad: LSystemRoad;
 let preIter = 5;
 let textureData: Uint8Array;
@@ -72,6 +75,54 @@ function generateRoad() {
   let extension_coefficient = controls["Extension Coefficient"];
   lsystemRoad.run(highwayLength, highwayAngle, roadLength, iterations, snap_coefficient, extension_coefficient);
   // run LSystem
+
+  let outputGrid: number[][] = city.rasterize(lsystemRoad.edges);
+
+  let col1Array: number[] = [];
+  let col2Array: number[] = [];
+  let col3Array: number[] = [];
+  let col4Array: number[] = [];
+  let colorsArray: number[] = [];
+
+  for (let i = 0; i < 2000; i++) {
+    for (let j = 0; j < 2000; j++) {
+      if (outputGrid[i][j] == 1) {
+        col1Array.push(1);
+        col1Array.push(0);
+        col1Array.push(0);
+        col1Array.push(0);
+
+        col2Array.push(0);
+        col2Array.push(1);
+        col2Array.push(0);
+        col2Array.push(0);
+
+        col3Array.push(0);
+        col3Array.push(0);
+        col3Array.push(1);
+        col3Array.push(0);
+
+        col4Array.push(i);
+        col4Array.push(0);
+        col4Array.push(j);
+        col4Array.push(1);
+
+        colorsArray.push(1);
+        colorsArray.push(0);
+        colorsArray.push(0);
+        colorsArray.push(1);
+      }
+    }
+  }
+
+  let col1: Float32Array = new Float32Array(col1Array);
+  let col2: Float32Array = new Float32Array(col2Array);
+  let col3: Float32Array = new Float32Array(col3Array);
+  let col4: Float32Array = new Float32Array(col4Array);
+  let colors: Float32Array = new Float32Array(colorsArray);
+
+  square.setInstanceVBOs2(col1, col2, col3, col4, colors);
+  square.setNumInstances(col1.length / 4);
 }
 
 
@@ -297,12 +348,13 @@ function main() {
   // // run LSystem
 
   lsystemRoad = new LSystemRoad(textureData, 2000, 2000);
+  city = new City(textureData, 2000, 2000, 5, 10);
   generateRoad();
 
   // instance render road system
-  let vboData = lsystemRoad.getVBO();
-  square.setInstanceVBOs2(vboData.col1, vboData.col2, vboData.col3, vboData.col4, vboData.colors);
-  square.setNumInstances(vboData.col1.length / 4.0);
+  // let vboData = lsystemRoad.getVBO();
+  // square.setInstanceVBOs2(vboData.col1, vboData.col2, vboData.col3, vboData.col4, vboData.colors);
+  // square.setNumInstances(vboData.col1.length / 4.0);
 
 
   //------------------------------------------------------------------

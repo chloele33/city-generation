@@ -744,4 +744,4 @@ class Edge {
 
 }
 
-export {LSystemRoad};
+export {LSystemRoad, Edge, Intersection, MapTexture};
