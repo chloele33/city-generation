@@ -104,7 +104,7 @@ function generateRoad() {
 
   for (let i = 0; i < 2000; i++) {
     for (let j = 0; j < 2000; j++) {
-      if (outputGrid[i][j] != 0 && outputGrid[i][j] != 3) {
+      if (outputGrid[i][j] == 1) {
         col1Array.push(1);
         col1Array.push(0);
         col1Array.push(0);
@@ -125,16 +125,16 @@ function generateRoad() {
         col4Array.push(j);
         col4Array.push(1)
         if (outputGrid[i][j] == 1) {
-          colorsArray.push(0.8);
-          colorsArray.push(0.8);
-          colorsArray.push(0.8);
+          colorsArray.push(0.9);
+          colorsArray.push(0.9);
+          colorsArray.push(0.9);
           colorsArray.push(1);
-        } else if (outputGrid[i][j] = 2) {
-          colorsArray.push(0);
-          colorsArray.push(0);
-          colorsArray.push(0);
-          colorsArray.push(1);
-        }
+         } //else if (outputGrid[i][j] = 2) {
+        //   colorsArray.push(0);
+        //   colorsArray.push(0);
+        //   colorsArray.push(0);
+        //   colorsArray.push(1);
+        // }
       }
     }
   }
@@ -150,15 +150,21 @@ function generateRoad() {
 
   // instance render buildings
   // Instance redner rasterization
-  let buildingTransforms = city.generateBuildings(0.5, 10, 5, 0.5);
+  let buildingTransforms = city.generateBuildings(0.5, 10, 5, 0.2);
   let col1ArrayBd: number[] = [];
   let col2ArrayBd: number[] = [];
   let col3ArrayBd: number[] = [];
   let col4ArrayBd: number[] = [];
+  let typeArray: number[] = [];
   let colorsArrayBd: number[] = [];
 
   for (let i = 0; i < buildingTransforms.length; i++) {
     let currTransform: mat4 = buildingTransforms[i];
+    let currType = city.types[i];
+    typeArray.push(currType);
+    typeArray.push(currType);
+    typeArray.push(currType);
+    typeArray.push(currType);
 
     col1ArrayBd.push(currTransform[0]);
     col1ArrayBd.push(currTransform[1]);
@@ -191,8 +197,9 @@ function generateRoad() {
   let col3bd: Float32Array = new Float32Array(col3ArrayBd);
   let col4bd: Float32Array = new Float32Array(col4ArrayBd);
   let colorsbd: Float32Array = new Float32Array(colorsArrayBd);
+  let type: Float32Array = new Float32Array(typeArray);
 
-  cube.setInstanceVBOs2(col1bd, col2bd, col3bd, col4bd, colorsbd);
+  cube.setInstanceVBOs2(col1bd, col2bd, col3bd, col4bd, colorsbd, type);
   cube.setNumInstances(col1bd.length / 4);
 
 
@@ -202,7 +209,7 @@ function generateRoad() {
 function loadScene() {
   square = new Square();
   square.create();
-  screenQuad = new ScreenQuad();
+  screenQuad = new ScreenQuad(vec3.fromValues(0, 0, 1000));
   screenQuad.create();
   plane = new Plane(vec3.fromValues(0, 0, 0), vec2.fromValues(2, 2), 8);
   plane.create();

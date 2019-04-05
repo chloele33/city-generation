@@ -1,6 +1,7 @@
 import {Edge, Intersection, MapTexture} from './LSystemRoad'
 import {vec2, vec3, mat4, quat} from 'gl-matrix';
 import {runInNewContext} from "vm";
+import {type} from "os";
 
 class City {
     cityGrid: number[][]// 2D grid of 1's and 0's. 1 if true 0 false
@@ -10,6 +11,7 @@ class City {
     edges: Edge[];
     buildingCenters: vec2[];
     buildingHeight: number;
+    types: number[];
 
     constructor(texture: Uint8Array, width: number, height: number) {
         this.texture = new MapTexture(texture, width, height);
@@ -103,7 +105,7 @@ class City {
         }
 
         // place buildings
-        for (let i = 0; i < this.texture.width * 2; i++) {
+        for (let i = 0; i < this.texture.width * 3 ; i++) {
             let x = Math.floor(this.texture.width * Math.random());
             let y = Math.floor(this.texture.height * Math.random());
 
@@ -145,24 +147,27 @@ class City {
         let buildingWidth = width;
         let vertices : vec2[] = [];
         let transforms : mat4[] = [];
+        this.types = [];
         let buildingBlocks: BuildingPrimitive[] = [];
         for (let i = 0; i < this.buildingCenters.length; i++) {
             buildingWidth = width;
+            let typeNumber = 1.0;
             // add population density to determine height of building
             let x = this.buildingCenters[i][0];
             let y = this.buildingCenters[i][1];
             let popDensity = this.texture.getPopulation(x, y);
             let height = buildingHeight * 2 *  popDensity * popDensity ;
-            if (popDensity < 0.7) {
+            if (popDensity < 0.6) {
                 height = buildingHeight   *  popDensity * popDensity;
                 buildingWidth = buildingWidth * 2;
-
+                typeNumber = 0.0;
             }
 
             // place first primitive
             let angle = Math.random() * 2 * Math.PI;
             let first = new BuildingPrimitive(vec2.fromValues(x, y), buildingWidth/3 + buildingWidth * Math.random(), height, buildingWidth/3 + buildingWidth*Math.random(), angle);
             buildingBlocks.push(first);
+            this.types.push(typeNumber);
             transforms.push(first.getTransform());
 
             // extrude downwards
@@ -178,6 +183,7 @@ class City {
                     // create new
                     let newBlock = new BuildingPrimitive(newCenter, buildingWidth/3 + buildingWidth*Math.random(), height, buildingWidth/3 + buildingWidth*Math.random(), angle);
                     buildingBlocks.push(newBlock);
+                    this.types.push(typeNumber);
                     transforms.push(newBlock.getTransform());
                 }
                 // update height

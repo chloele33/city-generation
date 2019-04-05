@@ -4,6 +4,7 @@ precision highp float;
 uniform vec3 u_Eye, u_Ref, u_Up;
 uniform vec2 u_Dimensions;
 uniform float u_Time;
+uniform mat4 u_ViewProjInv;
 
 
 in vec2 fs_Pos;
@@ -154,6 +155,41 @@ float worley(float x, float y, float scale) {
 }
 
 
+// Perlin Noise
+float falloff(float t) {
+  t = t * t * t * (t * (t * 6. - 15.) + 10.);
+  return t;
+}
+
+vec2 randGrad(vec2 pos, vec2 seed) {
+  float randDeg = random1(pos, seed) * 3.1415 * 2.0;
+  return vec2(cos(randDeg), sin(randDeg));
+}
+
+float perlin(vec2 pos, float scale) {
+    pos = pos / scale;
+    vec2 pCell = floor(pos);
+    pos = pos - pCell;
+    float dotGrad00 = dot(randGrad(pCell + vec2(0.0, 0.0), vec3(0.0).xz), pos - vec2(0.0, 0.0));
+    float dotGrad01 = dot(randGrad(pCell + vec2(0.0, 1.0), vec3(0.0).xz), pos - vec2(0.0, 1.0));
+    float dotGrad10 = dot(randGrad(pCell + vec2(1.0, 0.0), vec3(0.0).xz), pos - vec2(1.0, 0.0));
+    float dotGrad11 = dot(randGrad(pCell + vec2(1.0, 1.0), vec3(0.0).xz), pos - vec2(1.0, 1.0));
+
+    return mix(mix(dotGrad00, dotGrad10, falloff(pos.x)), mix(dotGrad01, dotGrad11, falloff(pos.x)), falloff(pos.y)) + 0.5;
+}
+
+float fbmPerlin(vec2 pos, float cell, int it) {
+    float sum = 0.;
+    float noise = 0.;
+    for (int i = 0; i < it; i++) {
+        noise += perlin(pos, cell * pow(2.0, float(i))) / pow(2.0, float(it - i));
+        sum += 1. / pow(2., float(it - i));
+    }
+    noise = noise / sum;
+    return noise;
+}
+
+
 // a function that uses the NDC coordinates of the current fragment (i.e. its fs_Pos value) and projects a ray from that pixel.
 vec3 castRay(vec3 eye) {
     float len = length(u_Ref - eye);
@@ -197,6 +233,11 @@ vec3 backgroundColor(vec3 dir ) {
     float cloudMap = (1.5 - fbm(fs_Pos.x / (3.0*  yScale * yScale) * 100.0, 100.0 * fs_Pos.y/1000.0 / (1.0 * yScale * yScale))) * yScale * yScale;
     vec3 color = textureMap * (highlight) + (1.0 - textureMap) * (col);
     color = cloudMap * (cloudColor) + (1.0 - cloudMap) * color;
+
+
+    float  cloud = fbmPerlin(dir.xz * 2.0 / (dir.y ), 0.05, 3) * smoothstep(0.0, 0.8, dir.y);
+     color = mix(color, vec3(1.), smoothstep(0.2, 0.7, cloud) * 0.8);
+
 	return color;
 }
 

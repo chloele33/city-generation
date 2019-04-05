@@ -8,6 +8,8 @@ class Cube extends Drawable {
     positions: Float32Array;
     normals: Float32Array;
     center: vec4;
+    type: Float32Array;
+
 
     colors: Float32Array;
 
@@ -88,6 +90,7 @@ class Cube extends Drawable {
         this.generateIdx();
         this.generatePos();
         this.generateNor();
+        this.generateType();
 
         this.generateTransformCol1();
         this.generateTransformCol2();
@@ -113,12 +116,14 @@ class Cube extends Drawable {
                      col2: Float32Array,
                      col3: Float32Array,
                      col4: Float32Array,
-                     colors: Float32Array) {
+                     colors: Float32Array,
+                     types: Float32Array) {
         this.col1 = col1;
         this.col2 = col2;
         this.col3 = col3;
         this.col4 = col4;
         this.colors = colors;
+        this.type = types;
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.bufTransformCol1);
         gl.bufferData(gl.ARRAY_BUFFER, this.col1, gl.STATIC_DRAW);
@@ -128,6 +133,8 @@ class Cube extends Drawable {
         gl.bufferData(gl.ARRAY_BUFFER, this.col3, gl.STATIC_DRAW);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.bufTransformCol4);
         gl.bufferData(gl.ARRAY_BUFFER, this.col4, gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.bufType);
+        gl.bufferData(gl.ARRAY_BUFFER, this.type, gl.STATIC_DRAW);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.bufCol);
         gl.bufferData(gl.ARRAY_BUFFER, this.colors, gl.STATIC_DRAW);

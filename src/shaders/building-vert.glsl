@@ -17,11 +17,18 @@ in vec4 vs_Transform1;
 in vec4 vs_Transform2;
 in vec4 vs_Transform3;
 in vec4 vs_Transform4;
-
+in vec4 vs_Type;
 
 out vec4 fs_Col;
+out vec4 fs_Type;
 out vec4 fs_Pos;
 out vec4 fs_Nor;
+out vec4 fs_WorldPos;
+out float fs_isSkyscraper;
+out vec2 fs_transformCol4;
+out float fs_transformCol2;
+out vec2 fs_UV;
+
 
 
 
@@ -29,6 +36,12 @@ void main()
 {
     fs_Col = vs_Col;
     fs_Pos = vs_Pos;
+    fs_Nor = vs_Nor;
+    fs_transformCol2 = vs_Transform2[1];
+    fs_UV = vs_UV;
+    fs_Type = vs_Type;
+
+
 
 
     mat4 transformation = mat4(vs_Transform1,
@@ -38,8 +51,13 @@ void main()
 
     vec4 instancedPos = transformation * vs_Pos ;
 
+
+
     vec4 pos = vec4(100.0 * (instancedPos.x / (2000.0 / 2.0) - 1.0), instancedPos.y, 100.0 * (instancedPos.z / (2000.0 / 2.0) - 1.0), 1.0);
 
+
+    fs_transformCol4 = vec2(vs_Transform4[0], vs_Transform4[2]);
+    fs_WorldPos = pos;
 
     gl_Position = u_ViewProj * pos;
 
