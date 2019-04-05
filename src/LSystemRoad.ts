@@ -83,11 +83,13 @@ class LSystemRoad {
             vec4.fromValues(-1, 0, -1, 0), 0, 0);
 
         let highwayTurtle3 = new Turtle(vec4.fromValues(2000, 0, 1800, 1),
-            vec4.fromValues(0, 0, -1, 0), 0, 0);
+            vec4.fromValues(-1, 0, 0, 0), 0, 0);
 
          let highwayTurtle4 = new Turtle(vec4.fromValues(1700, 0, 2000, 1),
              vec4.fromValues(-1, 0, -1, 0), 0, 0);
 
+        let highwayTurtle5 = new Turtle(vec4.fromValues(0, 0, 2000, 1),
+            vec4.fromValues(-1, 0, -1, 0), 0, 0);
 
          this.turtleStack.push(highwayTurtle3);
          this.turtleStack.push(highwayTurtle4);
@@ -208,12 +210,12 @@ class LSystemRoad {
             //check to see if current position is above population threshold
             //if so, check new turtle
             if (Math.abs(maxPop - this.globalMaxPop) < 0.018) {
-                //if (Math.random() > 0.65) {
+                //if (maxPop > 0.40) {
                 if (this.currTurtle.orient[2] > this.currTurtle.orient[0]) {
                     this.turtleStack.push(new Turtle(vec4.fromValues(correctEndPoint[0],
                         correctEndPoint[1], correctEndPoint[2], 1), vec4.fromValues(0, 0, -1, 0), 0, this.currTurtle.iteration + 1));
                     this.turtleStack.push(new Turtle(vec4.fromValues(correctEndPoint[0],
-                            correctEndPoint[1], correctEndPoint[2], 1), vec4.fromValues(-1, 0, 0, 0), 0, this.currTurtle.iteration + 1));
+                        correctEndPoint[1], correctEndPoint[2], 1), vec4.fromValues(-1, 0, 0, 0), 0, this.currTurtle.iteration + 1));
                     this.turtleStack.push(new Turtle(vec4.fromValues(correctEndPoint[0],
                         correctEndPoint[1], correctEndPoint[2], 1), vec4.fromValues(1, 0, -1, 0), 0, this.currTurtle.iteration + 1));
                 } else {
@@ -233,7 +235,7 @@ class LSystemRoad {
     // returns a population density based on texture, between 0-1
     checkPopulation(endPoint: vec3) : number {
         //console.log(endPoint);
-        let pop = this.mapTexture.getPopulation(endPoint[0], endPoint[2]);
+        let pop = this.mapTexture.getPopulationOld(endPoint[0], endPoint[2]);
         //console.log(pop);
         return pop;
     }
@@ -588,9 +590,9 @@ class LSystemRoad {
             col4Array.push(currTransform[14]);
             col4Array.push(currTransform[15]);
 
-            colorsArray.push(1);
-            colorsArray.push(1);
-            colorsArray.push(1);
+            colorsArray.push(0.8);
+            colorsArray.push(0.8);
+            colorsArray.push(0.8);
             colorsArray.push(1);
         }
 
@@ -625,6 +627,22 @@ class MapTexture {
         this.height = height;
     }
 
+    getPopulationOld(x: number, y: number) : number {
+        //console.log("HERE" + this.texData.length);
+        //console.log(x, y);
+        let xPos = Math.floor((x));
+        let yPos = Math.floor((y) );
+        // let xPos = Math.floor(x / 2.0);
+        // let yPos = Math.floor(y/2.0);
+
+        let offset = 2;
+        let index = yPos * 2000 * 4 + xPos * 4 + offset;
+        //console.log(index);
+        let result = this.texData[index];
+        return result / 255.0;
+
+    }
+
     getPopulation(x: number, y: number) : number {
         //console.log("HERE" + this.texData.length);
         //console.log(x, y);
@@ -633,7 +651,7 @@ class MapTexture {
         // let xPos = Math.floor(x / 2.0);
         // let yPos = Math.floor(y/2.0);
 
-        let offset = 2;
+        let offset = 0;
         let index = yPos * 2000 * 4 + xPos * 4 + offset;
         //console.log(index);
         let result = this.texData[index];

@@ -22,11 +22,11 @@ const controls = {
   'Show Terrain' : true,
   'Show Population' : true,
   'Land vs. Water' : false,
-  'Iterations': 6,
+  'Iterations': 5,
   'Road Length': 70,
-  'Highway Length': 385,
-  'Snap Coefficient': 0.6,
-  'Extension Coefficient': 0.03,
+  'Highway Length': 395,
+  'Snap Coefficient': 0.5,
+  'Extension Coefficient': 0.02,
   'Road Thickness': 5,
   'Highway Thickness': 10
 };
@@ -55,7 +55,7 @@ gui.add(controls, 'Road Length', 20, 80).step(1).onChange(
     function() {
       rerun = true;
     }.bind(this));
-gui.add(controls, 'Highway Length', 385, 405).step(1).onChange(
+gui.add(controls, 'Highway Length', 385, 400).step(1).onChange(
     function() {
       rerun = true;
     }.bind(this));
@@ -104,7 +104,7 @@ function generateRoad() {
 
   for (let i = 0; i < 2000; i++) {
     for (let j = 0; j < 2000; j++) {
-      if (outputGrid[i][j] != 0) {
+      if (outputGrid[i][j] != 0 && outputGrid[i][j] != 3) {
         col1Array.push(1);
         col1Array.push(0);
         col1Array.push(0);
@@ -123,14 +123,13 @@ function generateRoad() {
         col4Array.push(i);
         col4Array.push(0);
         col4Array.push(j);
-        col4Array.push(1);
-
+        col4Array.push(1)
         if (outputGrid[i][j] == 1) {
+          colorsArray.push(0.8);
+          colorsArray.push(0.8);
+          colorsArray.push(0.8);
           colorsArray.push(1);
-          colorsArray.push(0);
-          colorsArray.push(0);
-          colorsArray.push(1);
-        } else {
+        } else if (outputGrid[i][j] = 2) {
           colorsArray.push(0);
           colorsArray.push(0);
           colorsArray.push(0);
@@ -151,7 +150,7 @@ function generateRoad() {
 
   // instance render buildings
   // Instance redner rasterization
-  let buildingTransforms = city.generateBuildings(3, 10, 5, 0.3);
+  let buildingTransforms = city.generateBuildings(0.5, 10, 5, 0.5);
   let col1ArrayBd: number[] = [];
   let col2ArrayBd: number[] = [];
   let col3ArrayBd: number[] = [];

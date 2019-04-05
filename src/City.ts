@@ -96,20 +96,20 @@ class City {
         // check water
         for (let i = 0; i < this.texture.width; i++) {
             for (let j = 0; j < this.texture.height; j++) {
-                if (this.texture.getElevation(i, j) == 0) {
-                    this.cityGrid[i][j] = 1;
+                if (this.texture.getElevation(i, j) == 0 && this.cityGrid[i][j] == 0) {
+                    this.cityGrid[i][j] = 3;
                 }
             }
         }
 
         // place buildings
-        for (let i = 0; i < this.texture.width * 4; i++) {
+        for (let i = 0; i < this.texture.width * 2; i++) {
             let x = Math.floor(this.texture.width * Math.random());
             let y = Math.floor(this.texture.height * Math.random());
 
             // check if x,y is a valid place to have a building
             let valid = true;
-            if (this.texture.getPopulation(x, y) < 0.055) {
+            if (this.texture.getPopulation(x, y) < 0.35) {
                 valid = false;
             }
             let radius = 5;
@@ -141,20 +141,27 @@ class City {
 
     // grow buildings at each building center in the grid
     // returns the tranform matrices for instance rendering
-    generateBuildings(floorHeight: number, buildingHeight: number, buildingWidth: number, prob: number) {
+    generateBuildings(floorHeight: number, buildingHeight: number, width: number, prob: number) {
+        let buildingWidth = width;
         let vertices : vec2[] = [];
         let transforms : mat4[] = [];
         let buildingBlocks: BuildingPrimitive[] = [];
         for (let i = 0; i < this.buildingCenters.length; i++) {
+            buildingWidth = width;
             // add population density to determine height of building
             let x = this.buildingCenters[i][0];
             let y = this.buildingCenters[i][1];
             let popDensity = this.texture.getPopulation(x, y);
-            let height = buildingHeight * (Math.pow(popDensity, 3) * 1);
+            let height = buildingHeight * 2 *  popDensity * popDensity ;
+            if (popDensity < 0.7) {
+                height = buildingHeight   *  popDensity * popDensity;
+                buildingWidth = buildingWidth * 2;
+
+            }
 
             // place first primitive
             let angle = Math.random() * 2 * Math.PI;
-            let first = new BuildingPrimitive(vec2.fromValues(x, y), buildingWidth * Math.random(), height, buildingWidth * Math.random(), angle);
+            let first = new BuildingPrimitive(vec2.fromValues(x, y), buildingWidth/3 + buildingWidth * Math.random(), height, buildingWidth/3 + buildingWidth*Math.random(), angle);
             buildingBlocks.push(first);
             transforms.push(first.getTransform());
 
@@ -169,7 +176,7 @@ class City {
                     // random rotation
                     angle = Math.random() * 2 * Math.PI;
                     // create new
-                    let newBlock = new BuildingPrimitive(newCenter, buildingWidth * Math.random(), height, buildingWidth * Math.random(), angle);
+                    let newBlock = new BuildingPrimitive(newCenter, buildingWidth/3 + buildingWidth*Math.random(), height, buildingWidth/3 + buildingWidth*Math.random(), angle);
                     buildingBlocks.push(newBlock);
                     transforms.push(newBlock.getTransform());
                 }
