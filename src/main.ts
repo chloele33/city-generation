@@ -275,13 +275,14 @@ function main() {
   loadScene();
 
  // const camera = new Camera(vec3.fromValues(50, 50, 10), vec3.fromValues(50, 50, 0));
-  const camera = new Camera(vec3.fromValues(0, 200, 0), vec3.fromValues(0, 0, 0));
+  const camera = new Camera(vec3.fromValues(50, 10, -10), vec3.fromValues(0, 1.2, 0));
 
+  //const camera = new Camera(vec3.fromValues(-2, 3, -8), vec3.fromValues(-1.5, 1.2, 0));
 
   const renderer = new OpenGLRenderer(canvas);
   renderer.setClearColor(0.2, 0.2, 0.2, 1);
   gl.enable(gl.DEPTH_TEST)
- // gl.enable(gl.BLEND);
+  //gl.enable(gl.BLEND);
   gl.blendFunc(gl.ONE, gl.ONE); // Additive blending
 
   const instancedShader = new ShaderProgram([
@@ -309,6 +310,11 @@ function main() {
   const buildingShader = new ShaderProgram([
     new Shader(gl.VERTEX_SHADER, require('./shaders/building-vert.glsl')),
     new Shader(gl.FRAGMENT_SHADER, require('./shaders/building-frag.glsl')),
+  ]);
+
+  const skyShader = new ShaderProgram([
+    new Shader(gl.VERTEX_SHADER, require('./shaders/sky-vert.glsl')),
+    new Shader(gl.FRAGMENT_SHADER, require('./shaders/sky-frag.glsl')),
   ]);
 
   // This function will be called every frame
@@ -362,7 +368,7 @@ function main() {
     }
 
 
-   // renderer.render(camera, textureShader, [screenQuad]);
+    renderer.render(camera, skyShader, [screenQuad]);
     renderer.render(camera, planeShader, [plane]);
 
     renderer.render(camera, instancedShader, [
