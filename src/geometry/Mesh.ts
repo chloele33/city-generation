@@ -85,6 +85,8 @@ class Mesh extends Drawable {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.bufUV);
     gl.bufferData(gl.ARRAY_BUFFER, this.uvs, gl.STATIC_DRAW);
 
+    this.numInstances = 1;
+
     console.log(`Created Mesh from OBJ`);
     this.objString = ""; // hacky clear
   }
@@ -112,6 +114,32 @@ class Mesh extends Drawable {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.bufCol);
     gl.bufferData(gl.ARRAY_BUFFER, this.colors, gl.STATIC_DRAW);
   }
+
+  setInstanceVBOs2(col1: Float32Array,
+                   col2: Float32Array,
+                   col3: Float32Array,
+                   col4: Float32Array,
+                   colors: Float32Array) {
+    this.col1 = col1;
+    this.col2 = col2;
+    this.col3 = col3;
+    this.col4 = col4;
+    this.colors = colors;
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.bufTransformCol1);
+    gl.bufferData(gl.ARRAY_BUFFER, this.col1, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.bufTransformCol2);
+    gl.bufferData(gl.ARRAY_BUFFER, this.col2, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.bufTransformCol3);
+    gl.bufferData(gl.ARRAY_BUFFER, this.col3, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.bufTransformCol4);
+    gl.bufferData(gl.ARRAY_BUFFER, this.col4, gl.STATIC_DRAW);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.bufCol);
+    gl.bufferData(gl.ARRAY_BUFFER, this.colors, gl.STATIC_DRAW);
+  }
 };
+
+
 
 export default Mesh;

@@ -1,8 +1,9 @@
-import {vec3, vec2} from 'gl-matrix';
+import {vec3, vec2, mat4} from 'gl-matrix';
 import * as Stats from 'stats-js';
 import * as DAT from 'dat-gui';
 import Square from './geometry/Square';
 import Plane from './geometry/Plane';
+import Cube from './geometry/Cube';
 import ScreenQuad from './geometry/ScreenQuad';
 import OpenGLRenderer from './rendering/gl/OpenGLRenderer';
 import Camera from './Camera';
@@ -12,6 +13,7 @@ import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
 import {readTextFile} from './globals';
 import {LSystemRoad} from './LSystemRoad';
 import {City} from './City';
+
 
 
 // Define an object with application parameters and button callbacks
@@ -32,6 +34,7 @@ const controls = {
 let plane: Plane;
 let square: Square;
 let screenQuad: ScreenQuad;
+let cube: Cube;
 let time: number = 0.0;
 let city: City;
 let lsystemRoad: LSystemRoad;
@@ -92,6 +95,7 @@ function generateRoad() {
   let highwayThickness = controls["Highway Thickness"];
   let outputGrid: number[][] = city.rasterize(lsystemRoad.edges, roadThickness, highwayThickness);
 
+  // Instance redner rasterization
   let col1Array: number[] = [];
   let col2Array: number[] = [];
   let col3Array: number[] = [];
@@ -144,6 +148,55 @@ function generateRoad() {
 
   square.setInstanceVBOs2(col1, col2, col3, col4, colors);
   square.setNumInstances(col1.length / 4);
+
+  // instance render buildings
+  // Instance redner rasterization
+  let buildingTransforms = city.generateBuildings(3, 10, 5, 0.3);
+  let col1ArrayBd: number[] = [];
+  let col2ArrayBd: number[] = [];
+  let col3ArrayBd: number[] = [];
+  let col4ArrayBd: number[] = [];
+  let colorsArrayBd: number[] = [];
+
+  for (let i = 0; i < buildingTransforms.length; i++) {
+    let currTransform: mat4 = buildingTransforms[i];
+
+    col1ArrayBd.push(currTransform[0]);
+    col1ArrayBd.push(currTransform[1]);
+    col1ArrayBd.push(currTransform[2]);
+    col1ArrayBd.push(currTransform[3]);
+
+    col2ArrayBd.push(currTransform[4]);
+    col2ArrayBd.push(currTransform[5]);
+    col2ArrayBd.push(currTransform[6]);
+    col2ArrayBd.push(currTransform[7]);
+
+    col3ArrayBd.push(currTransform[8]);
+    col3ArrayBd.push(currTransform[9]);
+    col3ArrayBd.push(currTransform[10]);
+    col3ArrayBd.push(currTransform[11]);
+
+    col4ArrayBd.push(currTransform[12]);
+    col4ArrayBd.push(currTransform[13]);
+    col4ArrayBd.push(currTransform[14]);
+    col4ArrayBd.push(currTransform[15]);
+
+    colorsArrayBd.push(1);
+    colorsArrayBd.push(1);
+    colorsArrayBd.push(1);
+    colorsArrayBd.push(1.0);
+  }
+
+  let col1bd: Float32Array = new Float32Array(col1ArrayBd);
+  let col2bd: Float32Array = new Float32Array(col2ArrayBd);
+  let col3bd: Float32Array = new Float32Array(col3ArrayBd);
+  let col4bd: Float32Array = new Float32Array(col4ArrayBd);
+  let colorsbd: Float32Array = new Float32Array(colorsArrayBd);
+
+  cube.setInstanceVBOs2(col1bd, col2bd, col3bd, col4bd, colorsbd);
+  cube.setNumInstances(col1bd.length / 4);
+
+
 }
 
 
@@ -154,6 +207,8 @@ function loadScene() {
   screenQuad.create();
   plane = new Plane(vec3.fromValues(0, 0, 0), vec2.fromValues(2, 2), 8);
   plane.create();
+  cube = new Cube(vec3.fromValues(0, 0, 0));
+  cube.create();
 
   // load from obj file
   // load mud
@@ -252,6 +307,11 @@ function main() {
     new Shader(gl.FRAGMENT_SHADER, require('./shaders/terrain-frag.glsl')),
   ]);
 
+  const buildingShader = new ShaderProgram([
+    new Shader(gl.VERTEX_SHADER, require('./shaders/building-vert.glsl')),
+    new Shader(gl.FRAGMENT_SHADER, require('./shaders/building-frag.glsl')),
+  ]);
+
   // This function will be called every frame
   function tick() {
     camera.update();
@@ -309,6 +369,7 @@ function main() {
     renderer.render(camera, instancedShader, [
       square,
     ]);
+    renderer.render(camera, buildingShader, [cube]);
     stats.end();
 
     // Tell the browser to call `tick` again whenever it renders a new frame

@@ -1,5 +1,5 @@
 import {Edge, Intersection, MapTexture} from './LSystemRoad'
-import {vec2, vec3, mat4} from 'gl-matrix';
+import {vec2, vec3, mat4, quat} from 'gl-matrix';
 import {runInNewContext} from "vm";
 
 class City {
@@ -8,6 +8,8 @@ class City {
     highwayThickness: number;
     texture: MapTexture;
     edges: Edge[];
+    buildingCenters: vec2[];
+    buildingHeight: number;
 
     constructor(texture: Uint8Array, width: number, height: number) {
         this.texture = new MapTexture(texture, width, height);
@@ -19,6 +21,7 @@ class City {
         this.roadThickness = roadThickness;
         this.edges = edges;
         // initial setup
+        this.buildingCenters = [];
         this.cityGrid = [];
         for (let i = 0; i < this.texture.width; i++) {
             let newArr = [];
@@ -121,7 +124,7 @@ class City {
             }
             // draw point if valid
             if (valid) {
-                console.log("HI");
+                this.buildingCenters.push(vec2.fromValues(x, y)); // add to the collection of building centers
                 for (let j = x - radius; j <  x + radius + 1; j++) {
                     for (let k: number = y - radius; k < y + radius + 1; k++) {
                         if (j >= 0 && j < this.texture.width && k >= 0 && k < this.texture.height) {
@@ -136,7 +139,112 @@ class City {
         return this.cityGrid;
     }
 
+    // grow buildings at each building center in the grid
+    // returns the tranform matrices for instance rendering
+    generateBuildings(floorHeight: number, buildingHeight: number, buildingWidth: number, prob: number) {
+        let vertices : vec2[] = [];
+        let transforms : mat4[] = [];
+        let buildingBlocks: BuildingPrimitive[] = [];
+        for (let i = 0; i < this.buildingCenters.length; i++) {
+            // add population density to determine height of building
+            let x = this.buildingCenters[i][0];
+            let y = this.buildingCenters[i][1];
+            let popDensity = this.texture.getPopulation(x, y);
+            let height = buildingHeight * (Math.pow(popDensity, 3) * 1);
+
+            // place first primitive
+            let angle = Math.random() * 2 * Math.PI;
+            let first = new BuildingPrimitive(vec2.fromValues(x, y), buildingWidth * Math.random(), height, buildingWidth * Math.random(), angle);
+            buildingBlocks.push(first);
+            transforms.push(first.getTransform());
+
+            // extrude downwards
+            while (height > 0) {
+                let random = Math.random();
+                // add another building block
+                if (random < prob) {
+                    // find a random vertex to be the new center of the new primitive
+                    let idx = Math.floor(Math.random() * buildingBlocks.length);
+                    let newCenter = buildingBlocks[idx].getRandomEdgeVertex();
+                    // random rotation
+                    angle = Math.random() * 2 * Math.PI;
+                    // create new
+                    let newBlock = new BuildingPrimitive(newCenter, buildingWidth * Math.random(), height, buildingWidth * Math.random(), angle);
+                    buildingBlocks.push(newBlock);
+                    transforms.push(newBlock.getTransform());
+                }
+                // update height
+                height = height - floorHeight;
+            }
+
+        }
+        return transforms;
+    }
+
 
 }
 
-export {City};
+
+class BuildingPrimitive {
+    center: vec2;
+    x_length: number;
+    y_length: number;
+    z_length: number;
+    angle: number;
+    constructor(position: vec2, x_length: number, y_length: number, z_length: number, angle: number) {
+        this.center = position;
+        this.x_length = x_length;
+        this.y_length = y_length/2;
+        this.z_length = z_length;
+        this.angle = angle;
+
+
+    }
+
+    getRandomEdgeVertex() : vec2 {
+        let x = 0;
+        let y = 0;
+
+
+        let rand = Math.floor(Math.random() * Math.floor(4));
+        if (rand == 0) {
+            x = this.center[0] + this.x_length/2 * Math.cos(this.angle) - this.z_length/2 *  Math.sin(this.angle);
+
+            y = this.center[1] + this.x_length/2 * Math.sin(this.angle) + this.z_length/2 * Math.cos(this.angle);
+
+        } else if (rand == 1) {
+            x = this.center[0] + this.x_length/2 * Math.cos(this.angle) - this.z_length/2 *  Math.sin(this.angle);
+
+            y = this.center[1] + this.x_length/2 * Math.sin(this.angle) - this.z_length/2 * Math.cos(this.angle);
+
+        } else if (rand == 2) {
+            x = this.center[0] + this.x_length/2 * Math.cos(this.angle) + this.z_length/2 *  Math.sin(this.angle);
+
+            y = this.center[1] + this.x_length/2 * Math.sin(this.angle) + this.z_length/2 * Math.cos(this.angle);
+
+
+        } else {
+            x = this.center[0] + this.x_length/2 * Math.cos(this.angle) + this.z_length/2 *  Math.sin(this.angle);
+
+            y = this.center[1] + this.x_length/2 * Math.sin(this.angle) - this.z_length/2 * Math.cos(this.angle);
+
+
+        }
+
+        return vec2.fromValues(x, y);
+
+    }
+
+    getTransform() {
+        let translate = vec3.fromValues(this.center[0], this.y_length, this.center[1]);
+        let rotQuat: quat = quat.create();
+        quat.rotateY(rotQuat, rotQuat, this.angle);
+        let scaleVec = vec3.fromValues(this.x_length, this.y_length, this.z_length);
+
+        let transformationMat: mat4 = mat4.create();
+        mat4.fromRotationTranslationScale(transformationMat, rotQuat, translate, scaleVec);
+        return transformationMat;
+    }
+}
+
+export {City, BuildingPrimitive};
