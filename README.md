@@ -8,7 +8,9 @@
 
 Note: might need to make window dimensions into a square to see the full view.
 
-![](demos/demo8.png)
+![](demos/demo11.png) 
+
+![](demos/demo12.png)
 
 
 
@@ -105,7 +107,7 @@ When texture-ing the buildings, I check the y normal in order to decide whether 
 colors with worley noises and taking the power of sine and cosine functions. The sin and cos functions, combined with worley noise and the world position's x-y points allow me to create the stripes and grids on the buildings that resemble windows.
 
 ### Environmental Lighting
-![](demos/demo7.png)
+![](demos/demo8.png)
 
 Lastly, environmental lighting is implemented to illuminate the scene. There are two directional lights that are located near the sun. For each light, I am combining ambient, diffuse, and indirect lighting to create the output color, which is then combined with the building's texture color 
 
