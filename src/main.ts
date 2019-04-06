@@ -150,7 +150,7 @@ function generateRoad() {
 
   // instance render buildings
   // Instance redner rasterization
-  let buildingTransforms = city.generateBuildings(0.5, 10, 5, 0.2);
+  let buildingTransforms = city.generateBuildings(1, 10, 6.0, 0.2);
   let col1ArrayBd: number[] = [];
   let col2ArrayBd: number[] = [];
   let col3ArrayBd: number[] = [];

@@ -111,10 +111,10 @@ class City {
 
             // check if x,y is a valid place to have a building
             let valid = true;
-            if (this.texture.getPopulation(x, y) < 0.35) {
+            if (this.texture.getPopulation(x, y) < 0.33) {
                 valid = false;
             }
-            let radius = 5;
+            let radius = 7;
             for (let j = x - radius; j < x + radius + 1; j++) {
                 for (let k = y - radius; k < y + radius + 1; k++) {
                     if (j >= 0 && j < this.texture.width && k >= 0 && k < this.texture.height) {
@@ -148,27 +148,29 @@ class City {
         let vertices : vec2[] = [];
         let transforms : mat4[] = [];
         this.types = [];
-        let buildingBlocks: BuildingPrimitive[] = [];
         for (let i = 0; i < this.buildingCenters.length; i++) {
+            let buildingBlocks: BuildingPrimitive[] = [];
+
             buildingWidth = width;
             let typeNumber = 1.0;
             // add population density to determine height of building
-            let x = this.buildingCenters[i][0];
-            let y = this.buildingCenters[i][1];
+            let x = 1.0 * (this.buildingCenters[i][0]);
+            let y = 1.0 * (this.buildingCenters[i][1]);
             let popDensity = this.texture.getPopulation(x, y);
-            let height = buildingHeight * 2 *  popDensity * popDensity ;
-            if (popDensity < 0.6) {
+            let height = buildingHeight * 3.0 *  popDensity * popDensity ;
+            if (popDensity < 0.45) {
                 height = buildingHeight   *  popDensity * popDensity;
-                buildingWidth = buildingWidth * 2;
+                buildingWidth = buildingWidth * 1.5;
                 typeNumber = 0.0;
             }
 
             // place first primitive
-            let angle = Math.random() * 2 * Math.PI;
-            let first = new BuildingPrimitive(vec2.fromValues(x, y), buildingWidth/3 + buildingWidth * Math.random(), height, buildingWidth/3 + buildingWidth*Math.random(), angle);
+            let angle = Math.random() * 2.0 * Math.PI;
+            let first = new BuildingPrimitive(vec2.fromValues(x, y), buildingWidth/3.0 + buildingWidth * Math.random(), height, buildingWidth/3.0 + buildingWidth*Math.random(), angle);
             buildingBlocks.push(first);
             this.types.push(typeNumber);
             transforms.push(first.getTransform());
+            height = height - floorHeight;
 
             // extrude downwards
             while (height > 0) {
@@ -179,9 +181,9 @@ class City {
                     let idx = Math.floor(Math.random() * buildingBlocks.length);
                     let newCenter = buildingBlocks[idx].getRandomEdgeVertex();
                     // random rotation
-                    angle = Math.random() * 2 * Math.PI;
+                    angle = Math.random() * 2.0 * Math.PI;
                     // create new
-                    let newBlock = new BuildingPrimitive(newCenter, buildingWidth/3 + buildingWidth*Math.random(), height, buildingWidth/3 + buildingWidth*Math.random(), angle);
+                    let newBlock = new BuildingPrimitive(newCenter, buildingWidth/3.0 + buildingWidth*Math.random(), height, buildingWidth/3.0 + buildingWidth*Math.random(), angle);
                     buildingBlocks.push(newBlock);
                     this.types.push(typeNumber);
                     transforms.push(newBlock.getTransform());
@@ -207,7 +209,7 @@ class BuildingPrimitive {
     constructor(position: vec2, x_length: number, y_length: number, z_length: number, angle: number) {
         this.center = position;
         this.x_length = x_length;
-        this.y_length = y_length/2;
+        this.y_length = y_length/2.0;
         this.z_length = z_length;
         this.angle = angle;
 
@@ -221,25 +223,25 @@ class BuildingPrimitive {
 
         let rand = Math.floor(Math.random() * Math.floor(4));
         if (rand == 0) {
-            x = this.center[0] + this.x_length/2 * Math.cos(this.angle) - this.z_length/2 *  Math.sin(this.angle);
+            x = this.center[0] + this.x_length/2.0 * Math.cos(this.angle) - this.z_length/2.0 *  Math.sin(this.angle);
 
-            y = this.center[1] + this.x_length/2 * Math.sin(this.angle) + this.z_length/2 * Math.cos(this.angle);
+            y = this.center[1] + this.x_length/2.0 * Math.sin(this.angle) + this.z_length/2.0 * Math.cos(this.angle);
 
         } else if (rand == 1) {
-            x = this.center[0] + this.x_length/2 * Math.cos(this.angle) - this.z_length/2 *  Math.sin(this.angle);
+            x = this.center[0] + this.x_length/2.0 * Math.cos(this.angle) - this.z_length/2.0 *  Math.sin(this.angle);
 
-            y = this.center[1] + this.x_length/2 * Math.sin(this.angle) - this.z_length/2 * Math.cos(this.angle);
+            y = this.center[1] + this.x_length/2.0 * Math.sin(this.angle) - this.z_length/2.0 * Math.cos(this.angle);
 
         } else if (rand == 2) {
-            x = this.center[0] + this.x_length/2 * Math.cos(this.angle) + this.z_length/2 *  Math.sin(this.angle);
+            x = this.center[0] + this.x_length/2.0 * Math.cos(this.angle) + this.z_length/2.0 *  Math.sin(this.angle);
 
-            y = this.center[1] + this.x_length/2 * Math.sin(this.angle) + this.z_length/2 * Math.cos(this.angle);
+            y = this.center[1] + this.x_length/2.0 * Math.sin(this.angle) + this.z_length/2.0 * Math.cos(this.angle);
 
 
         } else {
-            x = this.center[0] + this.x_length/2 * Math.cos(this.angle) + this.z_length/2 *  Math.sin(this.angle);
+            x = this.center[0] + this.x_length/2.0 * Math.cos(this.angle) + this.z_length/2.0 *  Math.sin(this.angle);
 
-            y = this.center[1] + this.x_length/2 * Math.sin(this.angle) - this.z_length/2 * Math.cos(this.angle);
+            y = this.center[1] + this.x_length/2.0 * Math.sin(this.angle) - this.z_length/2.0 * Math.cos(this.angle);
 
 
         }
