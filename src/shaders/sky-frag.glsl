@@ -266,21 +266,20 @@ void main() {
     // distance fog
     float fog = clamp(smoothstep(20.0, 120.0, length(fs_Pos)), 0.0, 1.0); // Distance fog
 
-//  	// contrast
-//  	color = color*color*(3.0-2.0*color);
-//
-//  	// saturation
-//    color = mix( color, vec3(dot(color,vec3(0.40))), -0.5 );
+ 	// contrast
+ 	color = color*color*(3.0-2.0*color);
 
-    //VIGNETTE
-    float fallOff = 0.25;
-    vec2 uv = gl_FragCoord.xy / u_Dimensions.xy;
-   	vec2 coord = (uv - 0.5) * (u_Dimensions.x/u_Dimensions.y) * 2.0;
-    float rf = sqrt(dot(coord, coord)) * fallOff;
-    float rf2_1 = rf * rf + 1.0;
-    float e = 1.0 / (rf2_1 * rf2_1);
-    color *= e;
+ 	// saturation
+   color = mix( color, vec3(dot(color,vec3(0.40))), -0.5 );
+
+    // //VIGNETTE
+    // float fallOff = 0.25;
+    // vec2 uv = gl_FragCoord.xy / u_Dimensions.xy;
+   	// vec2 coord = (uv - 0.5) * (u_Dimensions.x/u_Dimensions.y) * 2.0;
+    // float rf = sqrt(dot(coord, coord)) * fallOff;
+    // float rf2_1 = rf * rf + 1.0;
+    // float e = 1.0 / (rf2_1 * rf2_1);
+    // color = color * e;
 
     out_Col = vec4(mix(color, vec3(205.0 / 255.0, 233.0 / 255.0, 1.0) ,fog), 1.0 );
-
 }
